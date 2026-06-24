@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MG Admin — Generador de Planes</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --v1:#1B4332;--v2:#2D6A4F;--v3:#40916C;--v4:#74C69D;
+  --carbon:#0D0D0D;--c2:#141414;--c3:#1C1C1C;--c4:#252525;
+  --crema:#F5F0E8;--gris:#6B6B6B;--blanco:#fff;
+  --red:#E53E3E;--yellow:#D69E2E;--sidebar:260px;
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Montserrat',sans-serif;background:var(--c2);color:var(--blanco);display:flex}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  width:var(--sidebar);flex-shrink:0;
+  background:var(--carbon);
+  border-right:1px solid rgba(255,255,255,.06);
+  display:flex;flex-direction:column;
+  height:100vh;overflow:hidden;
+}
+.sb-logo{
+  padding:28px 24px 24px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.sb-michael{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;font-style:italic;color:white}
+.sb-gonzalez{font-family:'Montserrat',sans-serif;font-size:7.5px;font-weight:700;letter-spacing:5px;text-transform:uppercase;color:var(--v4)}
+.sb-badge{
+  margin-top:10px;display:inline-flex;align-items:center;gap:6px;
+  background:rgba(45,106,79,.15);border:1px solid rgba(116,198,157,.2);
+  padding:4px 10px;border-radius:2px;
+}
+.sb-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--v4);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.sb-badge-txt{font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--v4)}
+.sb-nav{flex:1;padding:20px 0;overflow-y:auto}
+.sb-section{padding:0 16px;margin-bottom:8px}
+.sb-section-label{font-size:8px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.2);padding:8px 8px 6px}
+.sb-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:3px;cursor:pointer;
+  font-size:12px;font-weight:400;color:rgba(255,255,255,.45);
+  transition:all .25s;margin-bottom:2px;text-decoration:none;
+}
+.sb-item:hover{background:rgba(255,255,255,.04);color:rgba(255,255,255,.8)}
+.sb-item.active{background:rgba(45,106,79,.15);color:var(--v4);border-left:2px solid var(--v4);margin-left:-2px}
+.sb-item-ico{font-size:14px;width:20px;text-align:center}
+.sb-item-badge{
+  margin-left:auto;background:var(--v2);color:white;
+  font-size:8px;font-weight:700;padding:2px 7px;border-radius:20px;
+}
+.sb-bottom{
+  padding:16px;border-top:1px solid rgba(255,255,255,.06);
+  display:flex;align-items:center;gap:10px;
+}
+.sb-avatar{
+  width:34px;height:34px;border-radius:50%;background:var(--v2);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Cormorant Garamond',serif;font-size:14px;color:white;
+}
+.sb-user-name{font-size:11px;font-weight:500;color:rgba(255,255,255,.7)}
+.sb-user-role{font-size:9px;font-weight:300;color:var(--gris)}
+
+/* ── MAIN ── */
+.main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.topbar{
+  height:60px;flex-shrink:0;
+  background:var(--c2);border-bottom:1px solid rgba(255,255,255,.06);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 32px;
+}
+.topbar-title{font-size:13px;font-weight:600;color:white;letter-spacing:.5px}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.top-btn{
+  padding:8px 18px;border-radius:2px;font-size:9px;font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;cursor:pointer;border:none;
+  font-family:'Montserrat',sans-serif;transition:all .3s;
+}
+.top-btn-ghost{background:transparent;color:rgba(255,255,255,.45);border:1px solid rgba(255,255,255,.1)}
+.top-btn-ghost:hover{border-color:var(--v4);color:var(--v4)}
+.top-btn-prim{background:var(--v2);color:white}
+.top-btn-prim:hover{background:var(--v3)}
+.top-btn-prim:disabled{background:var(--c4);color:var(--gris);cursor:not-allowed}
+
+/* ── CONTENT AREA ── */
+.content{flex:1;overflow-y:auto;padding:32px}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:2px;margin-bottom:28px}
+.tab{
+  padding:10px 22px;border-radius:2px;cursor:pointer;
+  font-size:9.5px;font-weight:600;letter-spacing:2px;text-transform:uppercase;
+  background:var(--c3);color:rgba(255,255,255,.35);
+  border:1px solid rgba(255,255,255,.05);transition:all .25s;
+}
+.tab:hover{color:rgba(255,255,255,.7)}
+.tab.active{background:var(--v2);color:white;border-color:transparent}
+
+/* ── FORM GRID ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px}
+.form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;margin-bottom:24px}
+.form-full{grid-column:1/-1}
+.form-group{display:flex;flex-direction:column;gap:7px}
+.form-label{font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.4)}
+.form-label span{color:var(--red);margin-left:2px}
+.form-input,.form-select,.form-textarea{
+  background:var(--c3);border:1px solid rgba(255,255,255,.08);border-radius:3px;
+  color:white;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:300;
+  padding:11px 14px;transition:border-color .25s;
+  outline:none;width:100%;
+}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--v3)}
+.form-select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236B6B6B' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+.form-select option{background:var(--c3)}
+.form-textarea{resize:vertical;min-height:90px;line-height:1.6}
+.form-hint{font-size:10px;color:var(--gris);margin-top:2px}
+
+/* ── SECTION CARD ── */
+.sec-card{
+  background:var(--c3);border:1px solid rgba(255,255,255,.06);
+  border-radius:4px;padding:28px;margin-bottom:20px;
+}
+.sec-card-header{
+  display:flex;align-items:center;gap:10px;margin-bottom:24px;
+  padding-bottom:18px;border-bottom:1px solid rgba(255,255,255,.06);
+}
+.sec-card-ico{font-size:18px}
+.sec-card-title{font-size:12px;font-weight:600;color:white;letter-spacing:.5px}
+.sec-card-sub{font-size:10px;font-weight:300;color:var(--gris);margin-top:2px}
+
+/* ── CHIPS SELECTOR ── */
+.chips-wrap{display:flex;flex-wrap:wrap;gap:8px}
+.chip-sel{
+  padding:7px 14px;border-radius:2px;cursor:pointer;
+  font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  color:rgba(255,255,255,.4);transition:all .25s;
+}
+.chip-sel:hover{border-color:rgba(116,198,157,.3);color:rgba(255,255,255,.7)}
+.chip-sel.sel{background:rgba(45,106,79,.2);border-color:var(--v3);color:var(--v4)}
+
+/* ── RANGE SLIDER ── */
+.range-wrap{display:flex;flex-direction:column;gap:8px}
+.range-row{display:flex;align-items:center;gap:12px}
+.form-range{flex:1;-webkit-appearance:none;height:4px;border-radius:2px;background:rgba(255,255,255,.1);outline:none}
+.form-range::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--v3);cursor:pointer;border:2px solid var(--c3)}
+.range-val{font-size:12px;font-weight:600;color:var(--v4);min-width:40px;text-align:right}
+
+/* ── OUTPUT PANEL ── */
+.output-panel{
+  background:var(--carbon);border:1px solid rgba(255,255,255,.08);
+  border-radius:4px;overflow:hidden;
+}
+.output-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;background:var(--c3);
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.output-title{font-size:11px;font-weight:600;color:white;letter-spacing:.5px}
+.output-actions{display:flex;gap:8px}
+.out-btn{
+  padding:6px 14px;border-radius:2px;font-size:8.5px;font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;cursor:pointer;border:none;
+  font-family:'Montserrat',sans-serif;transition:all .25s;
+}
+.out-btn-copy{background:rgba(255,255,255,.06);color:rgba(255,255,255,.5)}
+.out-btn-copy:hover{background:rgba(255,255,255,.1);color:white}
+.out-btn-dl{background:var(--v2);color:white}
+.out-btn-dl:hover{background:var(--v3)}
+.output-body{
+  padding:24px;max-height:600px;overflow-y:auto;
+  font-size:12.5px;font-weight:300;line-height:1.9;
+  color:rgba(255,255,255,.75);
+}
+.output-body.empty{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:300px;color:rgba(255,255,255,.2);text-align:center;gap:12px;
+}
+.output-body .out-icon{font-size:40px;opacity:.3}
+.output-body .out-msg{font-size:12px;font-weight:300;letter-spacing:.5px}
+.output-body h2{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;color:var(--v4);margin:20px 0 10px}
+.output-body h3{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--v3);margin:18px 0 8px}
+.output-body ul{padding-left:18px;margin:8px 0}
+.output-body li{margin-bottom:6px}
+.output-body table{width:100%;border-collapse:collapse;margin:12px 0;font-size:11.5px}
+.output-body th{background:rgba(45,106,79,.2);padding:9px 12px;text-align:left;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--v4);border:1px solid rgba(255,255,255,.06)}
+.output-body td{padding:9px 12px;border:1px solid rgba(255,255,255,.05);vertical-align:top}
+.output-body tr:nth-child(even) td{background:rgba(255,255,255,.02)}
+
+/* ── LOADING ── */
+.loading-bar{
+  height:3px;background:linear-gradient(90deg,var(--v2),var(--v4),var(--v2));
+  background-size:200% 100%;
+  animation:slide 1.5s linear infinite;
+  border-radius:0 0 4px 4px;
+}
+@keyframes slide{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.loading-dots{display:inline-flex;gap:4px;align-items:center}
+.loading-dots span{
+  width:6px;height:6px;border-radius:50%;background:var(--v4);
+  animation:dot .8s ease-in-out infinite;
+}
+.loading-dots span:nth-child(2){animation-delay:.15s}
+.loading-dots span:nth-child(3){animation-delay:.3s}
+@keyframes dot{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+
+/* ── STATUS TAGS ── */
+.status{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:8.5px;font-weight:600;letter-spacing:1px}
+.status-active{background:rgba(45,106,79,.2);color:var(--v4)}
+.status-pending{background:rgba(214,158,46,.15);color:#D69E2E}
+.status-new{background:rgba(116,198,157,.1);color:var(--v4);border:1px solid rgba(116,198,157,.2)}
+
+/* ── CLIENTS TABLE ── */
+.clients-table{width:100%;border-collapse:collapse}
+.clients-table th{
+  padding:11px 16px;text-align:left;
+  font-size:8px;font-weight:700;letter-spacing:3px;text-transform:uppercase;
+  color:rgba(255,255,255,.3);border-bottom:1px solid rgba(255,255,255,.06);
+}
+.clients-table td{
+  padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.04);
+  font-size:12px;font-weight:300;color:rgba(255,255,255,.65);
+  vertical-align:middle;
+}
+.clients-table tr:hover td{background:rgba(255,255,255,.02)}
+.client-name{font-weight:500;color:white}
+.table-action{
+  padding:6px 14px;border-radius:2px;font-size:8px;font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;cursor:pointer;border:none;
+  font-family:'Montserrat',sans-serif;
+}
+.ta-view{background:rgba(45,106,79,.15);color:var(--v4);transition:all .25s}
+.ta-view:hover{background:var(--v2);color:white}
+.ta-gen{background:rgba(255,255,255,.06);color:rgba(255,255,255,.5);transition:all .25s}
+.ta-gen:hover{background:var(--v2);color:white}
+
+/* ── METRIC CARDS ── */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+.metric{
+  background:var(--c3);border:1px solid rgba(255,255,255,.06);
+  border-radius:4px;padding:20px;
+}
+.metric-label{font-size:8.5px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--gris);margin-bottom:10px}
+.metric-val{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;color:white;line-height:1}
+.metric-val em{color:var(--v4);font-style:normal;font-size:.6em}
+.metric-sub{font-size:10px;font-weight:300;color:var(--gris);margin-top:4px}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:2px}
+
+/* ── VIEWS ── */
+.view{display:none}
+.view.active{display:block}
+
+/* ── ALERT ── */
+.alert{
+  padding:12px 16px;border-radius:3px;margin-bottom:20px;
+  font-size:11px;font-weight:400;display:flex;align-items:center;gap:10px;
+}
+.alert-info{background:rgba(45,106,79,.12);border:1px solid rgba(116,198,157,.2);color:var(--v4)}
+.alert-warn{background:rgba(214,158,46,.1);border:1px solid rgba(214,158,46,.2);color:#D69E2E}
+
+@media(max-width:768px){
+  .sidebar{display:none}
+  .form-grid,.form-grid-3{grid-template-columns:1fr}
+  .metrics{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-michael">Michael</div>
+    <div class="sb-gonzalez">González</div>
+    <div class="sb-badge">
+      <div class="sb-badge-dot"></div>
+      <div class="sb-badge-txt">Admin Panel</div>
+    </div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section">
+      <div class="sb-section-label">Principal</div>
+      <a class="sb-item active" onclick="showView('dashboard')">
+        <span class="sb-item-ico">📊</span> Dashboard
+      </a>
+      <a class="sb-item" onclick="showView('clientes')">
+        <span class="sb-item-ico">👥</span> Clientes
+        <span class="sb-item-badge">12</span>
+      </a>
+      <a class="sb-item" onclick="showView('nuevo')">
+        <span class="sb-item-ico">✨</span> Nuevo Plan
+      </a>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-label">Herramientas</div>
+      <a class="sb-item" onclick="showView('videos')">
+        <span class="sb-item-ico">🎥</span> Banco de Videos
+      </a>
+      <a class="sb-item" onclick="showView('planes')">
+        <span class="sb-item-ico">📋</span> Planes Generados
+      </a>
+    </div>
+  </nav>
+  <div class="sb-bottom">
+    <div class="sb-avatar">M</div>
+    <div>
+      <div class="sb-user-name">Michael González</div>
+      <div class="sb-user-role">Entrenador & Coach</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbar-title">Dashboard</div>
+    <div class="topbar-right">
+      <button class="top-btn top-btn-ghost" onclick="showView('nuevo')">+ Nuevo Plan</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ══ DASHBOARD ══ -->
+    <div class="view active" id="view-dashboard">
+      <div class="metrics">
+        <div class="metric">
+          <div class="metric-label">Clientes activos</div>
+          <div class="metric-val">12<em></em></div>
+          <div class="metric-sub">+2 este mes</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Planes generados</div>
+          <div class="metric-val">38<em></em></div>
+          <div class="metric-sub">este mes</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Plan popular</div>
+          <div class="metric-val" style="font-size:20px;padding-top:8px">Vital</div>
+          <div class="metric-sub">7 clientes activos</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Pendientes</div>
+          <div class="metric-val" style="color:#D69E2E">3</div>
+          <div class="metric-sub">plans por generar</div>
+        </div>
+      </div>
+      <div class="sec-card">
+        <div class="sec-card-header">
+          <span class="sec-card-ico">👥</span>
+          <div>
+            <div class="sec-card-title">Clientes recientes</div>
+            <div class="sec-card-sub">Últimos registros</div>
+          </div>
+          <button class="top-btn top-btn-ghost" style="margin-left:auto;font-size:8px" onclick="showView('clientes')">Ver todos</button>
+        </div>
+        <table class="clients-table">
+          <thead><tr><th>Cliente</th><th>Plan</th><th>Objetivo</th><th>Estado</th><th>Acción</th></tr></thead>
+          <tbody>
+            <tr><td><div class="client-name">Carlos Mendoza</div><div style="font-size:10px;color:var(--gris)">38 años · 82kg</div></td><td>Vital</td><td>Recuperación rodilla</td><td><span class="status status-active">Activo</span></td><td><button class="table-action ta-view" onclick="showView('nuevo')">Ver plan</button></td></tr>
+            <tr><td><div class="client-name">Laura Pérez</div><div style="font-size:10px;color:var(--gris)">29 años · 65kg</div></td><td>Elite</td><td>Pérdida de peso</td><td><span class="status status-active">Activo</span></td><td><button class="table-action ta-view" onclick="showView('nuevo')">Ver plan</button></td></tr>
+            <tr><td><div class="client-name">Sandra Ríos</div><div style="font-size:10px;color:var(--gris)">44 años · 72kg</div></td><td>Esencial</td><td>Bienestar general</td><td><span class="status status-pending">Pendiente</span></td><td><button class="table-action ta-gen" onclick="showView('nuevo')">Generar</button></td></tr>
+            <tr><td><div class="client-name">Jorge Castillo</div><div style="font-size:10px;color:var(--gris)">52 años · 90kg</div></td><td>Vital</td><td>Diabetes tipo 2</td><td><span class="status status-new">Nuevo</span></td><td><button class="table-action ta-gen" onclick="showView('nuevo')">Generar</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ NUEVO PLAN ══ -->
+    <div class="view" id="view-nuevo">
+      <div class="tabs">
+        <div class="tab active" onclick="setTab(this,0)">📋 Datos del cliente</div>
+        <div class="tab" onclick="setTab(this,1)">🏃 Objetivos</div>
+        <div class="tab" onclick="setTab(this,2)">🏥 Salud</div>
+        <div class="tab" onclick="setTab(this,3)">🍽️ Alimentación</div>
+      </div>
+
+      <!-- Tab 0: Datos -->
+      <div class="tab-panel" id="tab0">
+        <div class="alert alert-info">💡 Completa todos los campos marcados con * para generar un plan óptimo con IA</div>
+        <div class="sec-card">
+          <div class="sec-card-header"><span class="sec-card-ico">👤</span><div><div class="sec-card-title">Información personal</div></div></div>
+          <div class="form-grid">
+            <div class="form-group"><label class="form-label">Nombre completo <span>*</span></label><input class="form-input" id="f-nombre" placeholder="Nombre del cliente"></div>
+            <div class="form-group"><label class="form-label">Edad <span>*</span></label><input class="form-input" id="f-edad" type="number" placeholder="Años"></div>
+            <div class="form-group"><label class="form-label">Género <span>*</span></label><select class="form-select" id="f-genero"><option value="">Seleccionar</option><option>Masculino</option><option>Femenino</option><option>Prefiero no decir</option></select></div>
+            <div class="form-group"><label class="form-label">Plan contratado</label><select class="form-select" id="f-plan"><option value="">Seleccionar</option><option>Plan Esencial</option><option>Plan Vital</option><option>Plan Elite</option></select></div>
+          </div>
+        </div>
+        <div class="sec-card">
+          <div class="sec-card-header"><span class="sec-card-ico">📏</span><div><div class="sec-card-title">Medidas corporales</div></div></div>
+          <div class="form-grid-3">
+            <div class="form-group"><label class="form-label">Peso (kg) <span>*</span></label><input class="form-input" id="f-peso" type="number" placeholder="ej: 75"></div>
+            <div class="form-group"><label class="form-label">Talla (cm) <span>*</span></label><input class="form-input" id="f-talla" type="number" placeholder="ej: 170"></div>
+            <div class="form-group"><label class="form-label">% Grasa corporal</label><input class="form-input" id="f-grasa" type="number" placeholder="si lo sabe"></div>
+            <div class="form-group"><label class="form-label">Cintura (cm)</label><input class="form-input" id="f-cintura" placeholder="medida en cm"></div>
+            <div class="form-group"><label class="form-label">Cadera (cm)</label><input class="form-input" id="f-cadera" placeholder="medida en cm"></div>
+            <div class="form-group"><label class="form-label">Pecho (cm)</label><input class="form-input" id="f-pecho" placeholder="medida en cm"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 1: Objetivos -->
+      <div class="tab-panel" id="tab1" style="display:none">
+        <div class="sec-card">
+          <div class="sec-card-header"><span class="sec-card-ico">🎯</span><div><div class="sec-card-title">Objetivo principal</div></div></div>
+          <div class="form-group" style="margin-bottom:20px">
+            <label class="form-label">¿Cuál es el objetivo principal? <span>*</span></label>
+            <div class="chips-wrap" id="chips-objetivo">
+              <div class="chip-sel" onclick="toggleChip(this)">Perder peso</div>
+              <div class="chip-sel" onclick="toggleChip(this)">Ganar músculo</div>
+              <div class="chip-sel" onclick="toggleChip(this)">Recuperación de lesión</div>
+              <div class="chip-sel" onclick="toggleChip(this)">Mejorar resistencia</div>
+              <div class="chip-sel" onclick="toggleChip(this)">Bienestar general</div>
+              <div class="chip-sel" onclick="toggleChip(this)">Control diabetes</div>
+              <div class="chip-sel" onclick="toggleChip(this)">Rehabilitación</div>
+              <div class="chip-sel" onclick="toggleChip(this)">Flexibilidad</div>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:20px">
+            <label class="form-label">Nivel de actividad actual <span>*</span></label>
+            <select class="form-select" id="f-nivel">
+              <option value="">Seleccionar</option>
+              <option>Sedentario (sin ejercicio)</option>
+              <option>Poco activo (1-2 días/semana)</option>
+              <option>Moderado (3-4 días/semana)</option>
+              <option>Activo (5+ días/semana)</option>
+              <option>Atleta</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:20px">
+            <label class="form-label">Días disponibles para entrenar</label>
+            <div class="chips-wrap" id="chips-dias">
+              <div class="chip-sel" onclick="toggleChip(this)">Lun</div>
+              <div class="chip-sel" onclick="toggleChip(this)">Mar</div>
+              <div class="chip-sel" onclick="toggleChip(this)">Mié</div>
+              <div class="chip-sel" onclick="toggleChip(this)">Jue</div>
+              <div class="chip-sel" onclick="toggleChip(this)">Vie</div>
+              <div class="chip-sel" onclick="toggleChip(this)">Sáb</div>
+              <div class="chip-sel" onclick="toggleChip(this)">Dom</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tiempo por sesión</label>
+            <div class="range-wrap">
+              <div class="range-row">
+                <input type="range" class="form-range" id="f-tiempo" min="20" max="90" value="45" oninput="document.getElementById('tiempo-val').textContent=this.value+'min'">
+                <div class="range-val" id="tiempo-val">45min</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="sec-card">
+          <div class="sec-card-header"><span class="sec-card-ico">🏋️</span><div><div class="sec-card-title">Equipamiento disponible</div></div></div>
+          <div class="chips-wrap" id="chips-equipo">
+            <div class="chip-sel" onclick="toggleChip(this)">Sin equipamiento</div>
+            <div class="chip-sel" onclick="toggleChip(this)">Mancuernas</div>
+            <div class="chip-sel" onclick="toggleChip(this)">Barra + discos</div>
+            <div class="chip-sel" onclick="toggleChip(this)">Bandas elásticas</div>
+            <div class="chip-sel" onclick="toggleChip(this)">Gym completo</div>
+            <div class="chip-sel" onclick="toggleChip(this)">Colchoneta</div>
+            <div class="chip-sel" onclick="toggleChip(this)">TRX</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Salud -->
+      <div class="tab-panel" id="tab2" style="display:none">
+        <div class="sec-card">
+          <div class="sec-card-header"><span class="sec-card-ico">🏥</span><div><div class="sec-card-title">Historial de salud</div></div></div>
+          <div class="form-group" style="margin-bottom:20px">
+            <label class="form-label">Condiciones médicas o enfermedades</label>
+            <div class="chips-wrap" id="chips-cond">
+              <div class="chip-sel" onclick="toggleChip(this)">Ninguna</div>
+              <div class="chip-sel" onclick="toggleChip(this)">Diabetes tipo 1</div>
+              <div class="chip-sel" onclick="toggleChip(this)">Diabetes tipo 2</div>
+              <div class="chip-sel" onclick="toggleChip(this)">Hipertensión</div>
+              <div class="chip-sel" onclick="toggleChip(this)">Hipotiroidismo</div>
+              <div class="chip-sel" onclick="toggleChip(this)">Artritis</div>
+              <div class="chip-sel" onclick="toggleChip(this)">Osteoporosis</div>
+              <div class="chip-sel" onclick="toggleChip(this)">Hernia discal</div>
+              <div class="chip-sel" onclick="toggleChip(this)">Asma</div>
+              <div class="chip-sel" onclick="toggleChip(this)">Embarazo</div>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:20px">
+            <label class="form-label">Lesiones previas o actuales</label>
+            <div class="chips-wrap" id="chips-lesion">
+              <div class="chip-sel" onclick="toggleChip(this)">Sin lesiones</div>
+              <div class="chip-sel" onclick="toggleChip(this)">Rodilla</div>
+              <div class="chip-sel" onclick="toggleChip(this)">Hombro</div>
+              <div class="chip-sel" onclick="toggleChip(this)">Espalda baja</div>
+              <div class="chip-sel" onclick="toggleChip(this)">Cadera</div>
+              <div class="chip-sel" onclick="toggleChip(this)">Tobillo</div>
+              <div class="chip-sel" onclick="toggleChip(this)">Cervical</div>
+              <div class="chip-sel" onclick="toggleChip(this)">Muñeca</div>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:20px">
+            <label class="form-label">Medicamentos actuales</label>
+            <input class="form-input" id="f-medicamentos" placeholder="Nombre del medicamento (si aplica)">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Observaciones médicas adicionales</label>
+            <textarea class="form-textarea" id="f-obs-salud" placeholder="Cirugías recientes, restricciones médicas, indicaciones especiales..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 3: Alimentación -->
+      <div class="tab-panel" id="tab3" style="display:none">
+        <div class="sec-card">
+          <div class="sec-card-header"><span class="sec-card-ico">🍽️</span><div><div class="sec-card-title">Hábitos alimenticios</div></div></div>
+          <div class="form-grid" style="margin-bottom:20px">
+            <div class="form-group">
+              <label class="form-label">Número de comidas al día</label>
+              <select class="form-select" id="f-comidas">
+                <option>2 comidas</option><option selected>3 comidas</option>
+                <option>4 comidas</option><option>5+ comidas</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tipo de dieta</label>
+              <select class="form-select" id="f-dieta">
+                <option>Sin restricciones</option><option>Vegetariano</option>
+                <option>Vegano</option><option>Keto</option>
+                <option>Sin gluten</option><option>Sin lactosa</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:20px">
+            <label class="form-label">Alimentos que no consume</label>
+            <input class="form-input" id="f-nocome" placeholder="Alergias, intolerancias o preferencias...">
+          </div>
+          <div class="form-group" style="margin-bottom:20px">
+            <label class="form-label">Consumo de agua diario</label>
+            <div class="range-wrap">
+              <div class="range-row">
+                <input type="range" class="form-range" id="f-agua" min="1" max="4" step="0.5" value="1.5" oninput="document.getElementById('agua-val').textContent=this.value+'L'">
+                <div class="range-val" id="agua-val">1.5L</div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Observaciones alimenticias</label>
+            <textarea class="form-textarea" id="f-obs-ali" placeholder="Horarios de comida, situación económica, acceso a alimentos específicos..."></textarea>
+          </div>
+        </div>
+        <div class="sec-card">
+          <div class="sec-card-header"><span class="sec-card-ico">📝</span><div><div class="sec-card-title">Notas adicionales para el plan</div></div></div>
+          <div class="form-group">
+            <textarea class="form-textarea" id="f-notas" style="min-height:120px" placeholder="Cualquier información adicional que Michael deba considerar para personalizar mejor el plan..."></textarea>
+          </div>
+          <div style="margin-top:24px;display:flex;gap:12px;align-items:center">
+            <button class="top-btn top-btn-prim" onclick="generarPlan()" id="btn-generar" style="padding:14px 36px;font-size:10px">
+              ✨ Generar plan con IA
+            </button>
+            <div style="font-size:10px;color:var(--gris)">El plan se generará en 20-40 segundos</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OUTPUT -->
+      <div id="output-wrap" style="margin-top:24px;display:none">
+        <div class="output-panel">
+          <div id="output-loading" class="loading-bar" style="display:none"></div>
+          <div class="output-header">
+            <div class="output-title" id="output-title">Plan personalizado</div>
+            <div class="output-actions">
+              <button class="out-btn out-btn-copy" onclick="copyPlan()">📋 Copiar</button>
+              <button class="out-btn out-btn-dl" onclick="downloadPlan()">⬇️ Descargar</button>
+            </div>
+          </div>
+          <div class="output-body" id="output-body">
+            <div class="out-icon">📄</div>
+            <div class="out-msg">El plan aparecerá aquí</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ CLIENTES ══ -->
+    <div class="view" id="view-clientes">
+      <div class="sec-card">
+        <div class="sec-card-header">
+          <span class="sec-card-ico">👥</span>
+          <div><div class="sec-card-title">Todos los clientes</div><div class="sec-card-sub">12 registros</div></div>
+          <button class="top-btn top-btn-prim" style="margin-left:auto" onclick="showView('nuevo')">+ Nuevo cliente</button>
+        </div>
+        <table class="clients-table">
+          <thead><tr><th>Cliente</th><th>Edad</th><th>Plan</th><th>Objetivo</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <tbody>
+            <tr><td><div class="client-name">Carlos Mendoza</div></td><td>38</td><td>Vital</td><td>Recuperación rodilla</td><td><span class="status status-active">Activo</span></td><td style="display:flex;gap:6px"><button class="table-action ta-view">Ver</button><button class="table-action ta-gen" onclick="showView('nuevo')">Nuevo plan</button></td></tr>
+            <tr><td><div class="client-name">Laura Pérez</div></td><td>29</td><td>Elite</td><td>Pérdida de peso</td><td><span class="status status-active">Activo</span></td><td style="display:flex;gap:6px"><button class="table-action ta-view">Ver</button><button class="table-action ta-gen" onclick="showView('nuevo')">Nuevo plan</button></td></tr>
+            <tr><td><div class="client-name">Sandra Ríos</div></td><td>44</td><td>Esencial</td><td>Bienestar general</td><td><span class="status status-pending">Pendiente</span></td><td style="display:flex;gap:6px"><button class="table-action ta-view">Ver</button><button class="table-action ta-gen" onclick="showView('nuevo')">Generar</button></td></tr>
+            <tr><td><div class="client-name">Jorge Castillo</div></td><td>52</td><td>Vital</td><td>Diabetes tipo 2</td><td><span class="status status-new">Nuevo</span></td><td style="display:flex;gap:6px"><button class="table-action ta-view">Ver</button><button class="table-action ta-gen" onclick="showView('nuevo')">Generar</button></td></tr>
+            <tr><td><div class="client-name">María Torres</div></td><td>35</td><td>Esencial</td><td>Tonificación</td><td><span class="status status-active">Activo</span></td><td style="display:flex;gap:6px"><button class="table-action ta-view">Ver</button><button class="table-action ta-gen" onclick="showView('nuevo')">Nuevo plan</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ VIDEOS ══ -->
+    <div class="view" id="view-videos">
+      <div class="alert alert-warn">🎥 Banco de videos — Próximamente podrás subir los videos de Michael para integrarlos automáticamente en cada plan</div>
+      <div class="metrics" style="grid-template-columns:repeat(3,1fr)">
+        <div class="metric"><div class="metric-label">Videos cargados</div><div class="metric-val">0</div><div class="metric-sub">Pendiente de carga</div></div>
+        <div class="metric"><div class="metric-label">Categorías</div><div class="metric-val">8</div><div class="metric-sub">Grupos musculares</div></div>
+        <div class="metric"><div class="metric-label">Integración</div><div class="metric-val" style="font-size:16px;padding-top:8px">YouTube</div><div class="metric-sub">o subida directa</div></div>
+      </div>
+      <div class="sec-card">
+        <div class="sec-card-header"><span class="sec-card-ico">📂</span><div><div class="sec-card-title">Categorías de ejercicios</div><div class="sec-card-sub">Organiza los videos por grupo muscular o tipo de trabajo</div></div></div>
+        <div class="chips-wrap">
+          <div class="chip-sel sel">Piernas y glúteos</div>
+          <div class="chip-sel sel">Espalda</div>
+          <div class="chip-sel sel">Pecho</div>
+          <div class="chip-sel sel">Hombros</div>
+          <div class="chip-sel sel">Core y abdomen</div>
+          <div class="chip-sel sel">Cardio funcional</div>
+          <div class="chip-sel sel">Zumba</div>
+          <div class="chip-sel sel">Recuperación y movilidad</div>
+          <div class="chip-sel">Masajes y terapia</div>
+          <div class="chip-sel">Calentamiento</div>
+        </div>
+        <div style="margin-top:24px;padding:48px;border:2px dashed rgba(255,255,255,.1);border-radius:4px;text-align:center;color:rgba(255,255,255,.2)">
+          <div style="font-size:36px;margin-bottom:12px">🎬</div>
+          <div style="font-size:12px;margin-bottom:16px">Arrastra videos aquí o pega links de YouTube</div>
+          <button class="top-btn top-btn-ghost" style="font-size:9px">Subir video</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PLANES ══ -->
+    <div class="view" id="view-planes">
+      <div class="sec-card">
+        <div class="sec-card-header"><span class="sec-card-ico">📋</span><div><div class="sec-card-title">Planes generados</div><div class="sec-card-sub">Historial completo</div></div></div>
+        <table class="clients-table">
+          <thead><tr><th>Cliente</th><th>Fecha</th><th>Tipo de plan</th><th>Semanas</th><th>Ver</th></tr></thead>
+          <tbody>
+            <tr><td class="client-name">Carlos Mendoza</td><td>Abr 8, 2025</td><td>Recuperación + Funcional</td><td>8 semanas</td><td><button class="table-action ta-view">Abrir</button></td></tr>
+            <tr><td class="client-name">Laura Pérez</td><td>Abr 5, 2025</td><td>Pérdida de peso + Tonificación</td><td>12 semanas</td><td><button class="table-action ta-view">Abrir</button></td></tr>
+            <tr><td class="client-name">María Torres</td><td>Mar 28, 2025</td><td>Tonificación general</td><td>6 semanas</td><td><button class="table-action ta-view">Abrir</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ── NAVIGATION ──
+const titles = {
+  dashboard:'Dashboard',nuevo:'Nuevo Plan',
+  clientes:'Clientes',videos:'Banco de Videos',planes:'Planes Generados'
+};
+function showView(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+id).classList.add('active');
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(i=>{
+    if(i.getAttribute('onclick')&&i.getAttribute('onclick').includes(id)) i.classList.add('active');
+  });
+  document.getElementById('topbar-title').textContent=titles[id]||id;
+}
+
+// ── TABS ──
+function setTab(el,idx){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.tab-panel').forEach(p=>p.style.display='none');
+  document.getElementById('tab'+idx).style.display='block';
+}
+
+// ── CHIPS ──
+function toggleChip(el){el.classList.toggle('sel')}
+
+// ── COLLECT DATA ──
+function getSelectedChips(id){
+  return [...document.querySelectorAll('#'+id+' .chip-sel.sel')].map(c=>c.textContent.trim()).join(', ');
+}
+function getFormData(){
+  return {
+    nombre: document.getElementById('f-nombre').value||'Cliente',
+    edad: document.getElementById('f-edad').value||'N/A',
+    genero: document.getElementById('f-genero').value||'N/A',
+    plan: document.getElementById('f-plan').value||'N/A',
+    peso: document.getElementById('f-peso').value||'N/A',
+    talla: document.getElementById('f-talla').value||'N/A',
+    grasa: document.getElementById('f-grasa').value||'No indicado',
+    cintura: document.getElementById('f-cintura').value||'No indicado',
+    cadera: document.getElementById('f-cadera').value||'No indicado',
+    objetivo: getSelectedChips('chips-objetivo')||'No especificado',
+    nivel: document.getElementById('f-nivel').value||'N/A',
+    dias: getSelectedChips('chips-dias')||'No especificado',
+    tiempo: document.getElementById('f-tiempo').value+'min',
+    equipo: getSelectedChips('chips-equipo')||'No especificado',
+    condiciones: getSelectedChips('chips-cond')||'Ninguna',
+    lesiones: getSelectedChips('chips-lesion')||'Sin lesiones',
+    medicamentos: document.getElementById('f-medicamentos').value||'Ninguno',
+    obsSalud: document.getElementById('f-obs-salud').value||'Sin observaciones',
+    comidas: document.getElementById('f-comidas').value,
+    dieta: document.getElementById('f-dieta').value,
+    nocome: document.getElementById('f-nocome').value||'Ninguno',
+    agua: document.getElementById('f-agua').value+'L',
+    obsAli: document.getElementById('f-obs-ali').value||'Sin observaciones',
+    notas: document.getElementById('f-notas').value||'Ninguna'
+  };
+}
+
+// ── GENERATE PLAN ──
+async function generarPlan(){
+  const d=getFormData();
+  const btn=document.getElementById('btn-generar');
+  const wrap=document.getElementById('output-wrap');
+  const body=document.getElementById('output-body');
+  const loading=document.getElementById('output-loading');
+  const title=document.getElementById('output-title');
+
+  btn.disabled=true;btn.textContent='Generando...';
+  wrap.style.display='block';
+  loading.style.display='block';
+  title.textContent=`Plan personalizado — ${d.nombre}`;
+  body.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;gap:16px;color:rgba(255,255,255,.4)">
+    <div class="loading-dots"><span></span><span></span><span></span></div>
+    <div style="font-size:11px">Analizando perfil y generando plan con IA...</div>
+  </div>`;
+  wrap.scrollIntoView({behavior:'smooth',block:'start'});
+
+  const prompt=`Eres Michael González, entrenador personal con 8 años de experiencia, docente, especialista en recuperación de lesiones, masajes terapéuticos y Zumba. Tu filosofía: salud primero, no estética.
+
+PERFIL DEL CLIENTE:
+- Nombre: ${d.nombre}
+- Edad: ${d.edad} | Género: ${d.genero} | Plan: ${d.plan}
+- Peso: ${d.peso}kg | Talla: ${d.talla}cm | % Grasa: ${d.grasa}
+- Medidas: Cintura ${d.cintura}cm | Cadera ${d.cadera}cm
+
+OBJETIVOS:
+- Objetivo principal: ${d.objetivo}
+- Nivel de actividad: ${d.nivel}
+- Días disponibles: ${d.dias} | Tiempo por sesión: ${d.tiempo}
+- Equipamiento: ${d.equipo}
+
+SALUD:
+- Condiciones médicas: ${d.condiciones}
+- Lesiones: ${d.lesiones}
+- Medicamentos: ${d.medicamentos}
+- Observaciones: ${d.obsSalud}
+
+ALIMENTACIÓN:
+- Comidas al día: ${d.comidas} | Tipo de dieta: ${d.dieta}
+- No consume: ${d.nocome} | Agua: ${d.agua}
+- Observaciones: ${d.obsAli}
+
+NOTAS ADICIONALES: ${d.notas}
+
+Genera un plan completo y profesional en español con estas secciones:
+1. RESUMEN DEL PERFIL - análisis breve del cliente
+2. OBJETIVOS SMART - 3 objetivos específicos y medibles para 8-12 semanas
+3. RUTINA SEMANAL - tabla con días, grupos musculares, ejercicios (con series x reps), descanso. Adapta SIEMPRE a las condiciones médicas y lesiones
+4. PROTOCOLO DE RECUPERACIÓN - estiramientos post-entreno y técnicas de recuperación
+5. PLAN NUTRICIONAL BÁSICO - calorías estimadas, macros, distribución de comidas, alimentos recomendados y a evitar
+6. PROGRESIÓN - cómo evoluciona el plan semana a semana
+7. INDICADORES DE SEGUIMIENTO - qué medir y cuándo
+8. NOTAS ESPECIALES DEL ENTRENADOR - consejos personalizados de Michael
+
+Usa formato claro con emojis, tablas donde ayude. Sé específico y profesional.`;
+
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:2000,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    const data=await resp.json();
+    const text=data.content?.[0]?.text||'Error al generar el plan';
+    loading.style.display='none';
+    body.innerHTML=formatOutput(text,d.nombre);
+    window._planText=text;
+    btn.disabled=false;btn.textContent='✨ Generar nuevo plan';
+  }catch(e){
+    loading.style.display='none';
+    body.innerHTML=`<div style="color:#E53E3E;font-size:12px">❌ Error de conexión. Verifica tu API key de Anthropic.</div>`;
+    btn.disabled=false;btn.textContent='✨ Generar plan con IA';
+  }
+}
+
+function formatOutput(text,nombre){
+  let html=text
+    .replace(/^# (.+)$/gm,'<h2>$1</h2>')
+    .replace(/^## (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^### (.+)$/gm,'<h3 style="font-size:10px;color:var(--v4)">$1</h3>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong style="color:var(--v4);font-weight:600">$1</strong>')
+    .replace(/^- (.+)$/gm,'<li>$1</li>')
+    .replace(/(<li>.*<\/li>\n?)+/gs,'<ul>$&</ul>')
+    .replace(/\n\n/g,'<br><br>')
+    .replace(/\n/g,'<br>');
+  return `<div style="padding:8px 0"><div style="background:rgba(45,106,79,.1);border:1px solid rgba(116,198,157,.2);border-radius:3px;padding:12px 16px;margin-bottom:20px;font-size:11px;color:var(--v4)">✅ Plan generado para <strong>${nombre}</strong> — ${new Date().toLocaleDateString('es-CO',{day:'numeric',month:'long',year:'numeric'})}</div>${html}</div>`;
+}
+
+function copyPlan(){
+  if(window._planText){
+    navigator.clipboard.writeText(window._planText).then(()=>alert('Plan copiado al portapapeles'));
+  }
+}
+function downloadPlan(){
+  if(window._planText){
+    const nombre=document.getElementById('f-nombre').value||'cliente';
+    const blob=new Blob([window._planText],{type:'text/plain'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=`Plan_${nombre.replace(/\s+/g,'_')}.txt`;
+    a.click();
+  }
+}
+</script>
+</body>
+</html>
